@@ -1,5 +1,6 @@
 import socket
 import chatlib  # To use chatlib functions or consts, use chatlib.****
+import login_system
 
 SERVER_IP = "127.0.0.1"  # Our server will run on same computer as client
 SERVER_PORT = 5678
@@ -75,16 +76,30 @@ def get_highscore(conn):
 
 def login(conn):
     while True:
-        username = input("Please enter username: \n")
-        password = input("Please enter password: \n")
-        data = [username,password]
-        build_and_send_message(conn, chatlib.PROTOCOL_CLIENT["login_msg"],data)
-        message = recv_message_and_parse(conn)
-        if message == ('LOGIN_OK', ''):
-            print("Logged in")
-            return
-        else:
-            print("Wrong username or password")
+        user_choice = input("Would you like to login / register? ")
+        if user_choice == "login":
+            while True:
+                username = input("Please enter a username: \n")
+                password = input("Please enter a password: \n")
+                data = [username,password]
+                build_and_send_message(conn, chatlib.PROTOCOL_CLIENT["login_msg"],data)
+                message = recv_message_and_parse(conn)
+                print(f"message is {message}")
+                if message == ('LOGIN_OK', ''):
+                    print("Logged in")
+                    return
+                else:
+                    print("Wrong username or password")
+        elif user_choice == "register":
+            username = input("Please enter a username: ")
+            password = input("Please enter a password: ")
+            data = [username, password]
+            build_and_send_message(conn, chatlib.PROTOCOL_CLIENT["REGISTER"], data)
+            message = recv_message_and_parse(conn)
+            if message == ('REGISTER_SUCCESS', ''):
+                print("Registered succesfully ")
+            else:
+                print("User already exists ")
 
 
 def logout(conn):
@@ -132,7 +147,8 @@ def main():
                 exit("Error")
         elif user_input == "h":
             cmd, data = get_highscore(client_socket)
-            print(f"High-Score table:\n {data}")
+            print(f"High-Score table:\n")
+            print(data)
         elif user_input == "q":
             logout(client_socket)
             print("Goodbye")
